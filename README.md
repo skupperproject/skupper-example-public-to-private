@@ -2,7 +2,7 @@
 
 [![main](https://github.com/ssorj/skupper-example-public-to-private/actions/workflows/main.yaml/badge.svg)](https://github.com/ssorj/skupper-example-public-to-private/actions/workflows/main.yaml)
 
-#### Connect from the public cloud to services running on-prem
+#### Connect from the cloud to services running on-prem
 
 This example is part of a [suite of examples][examples] showing the
 different ways you can use [Skupper][website] to connect services
