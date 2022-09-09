@@ -1,6 +1,6 @@
 title: Skupper Hello World public to private
 subtitle: Connect from the cloud to services running on-prem
-github_actions_url: https://github.com/ssorj/skupper-example-public-to-private/actions/workflows/main.yaml
+github_actions_url: https://github.com/skupperproject/skupper-example-public-to-private/actions/workflows/main.yaml
 overview: |
   This example is a basic multi-service HTTP application deployed
   across one Kubernetes cluster in the public cloud and another

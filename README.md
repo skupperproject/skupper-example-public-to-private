@@ -1,6 +1,6 @@
 # Skupper Hello World public to private
 
-[![main](https://github.com/ssorj/skupper-example-public-to-private/actions/workflows/main.yaml/badge.svg)](https://github.com/ssorj/skupper-example-public-to-private/actions/workflows/main.yaml)
+[![main](https://github.com/skupperproject/skupper-example-public-to-private/actions/workflows/main.yaml/badge.svg)](https://github.com/skupperproject/skupper-example-public-to-private/actions/workflows/main.yaml)
 
 #### Connect from the cloud to services running on-prem
 
