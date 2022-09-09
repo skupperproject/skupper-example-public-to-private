@@ -40,7 +40,7 @@ It contains two services:
 
 * A backend service that exposes an `/api/hello` endpoint.  It
   returns greetings of the form `Hi, <your-name>.  I am <my-name>
-  (<pod-name>)`.
+  (<pod>)`.
 
 * A frontend service that sends greetings to the backend and
   fetches new greetings in response.
