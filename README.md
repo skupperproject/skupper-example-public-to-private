@@ -1,8 +1,8 @@
-# Skupper public to private
+# Skupper Hello World public to private
 
 [![main](https://github.com/ssorj/skupper-example-public-to-private/actions/workflows/main.yaml/badge.svg)](https://github.com/ssorj/skupper-example-public-to-private/actions/workflows/main.yaml)
 
-#### Connect to services in on-prem sites from the public cloud
+#### Connect from the public cloud to services running on-prem
 
 This example is part of a [suite of examples][examples] showing the
 different ways you can use [Skupper][website] to connect services
@@ -32,7 +32,25 @@ across cloud providers, data centers, and edge sites.
 
 ## Overview
 
-XXX
+This example is a basic multi-service HTTP application deployed
+across one Kubernetes cluster in the public cloud and another
+Kubernetes cluster in a private data center.
+
+It contains two services:
+
+* A backend service that exposes an `/api/hello` endpoint.  It
+  returns greetings of the form `Hi, <your-name>.  I am <my-name>
+  (<pod-name>)`.
+
+* A frontend service that sends greetings to the backend and
+  fetches new greetings in response.
+
+The backend service runs in the private on-prem cluster, and the
+frontend service runs in the public cloud.  Skupper enables the
+frontend to connect to the backend without a VPN or special firewall
+rules.
+
+<!-- <img src="images/entities.svg" width="640"/> -->
 
 ## Prerequisites
 
