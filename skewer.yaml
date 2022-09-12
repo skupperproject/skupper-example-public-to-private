@@ -20,7 +20,7 @@ overview: |
   frontend to connect to the backend without a VPN or special firewall
   rules.
 
-  <!-- <img src="images/entities.svg" width="640"/> -->
+    <img src="images/entities.svg" style="max-width: 100%;"/>
 sites:
   public:
     kubeconfig: ~/.kube/config-public

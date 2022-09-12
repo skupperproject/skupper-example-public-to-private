@@ -50,7 +50,7 @@ frontend service runs in the public cloud.  Skupper enables the
 frontend to connect to the backend without a VPN or special firewall
 rules.
 
-<!-- <img src="images/entities.svg" width="640"/> -->
+  <img src="images/entities.svg" style="max-width: 100%;"/>
 
 ## Prerequisites
 
