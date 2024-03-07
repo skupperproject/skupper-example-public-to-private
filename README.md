@@ -123,7 +123,7 @@ kubectl create namespace public
 kubectl config set-context --current --namespace public
 ~~~
 
-_**Public:**_
+_**Private:**_
 
 ~~~ shell
 export KUBECONFIG=~/.kube/config-private
@@ -147,7 +147,7 @@ _**Public:**_
 kubectl create deployment frontend --image quay.io/skupper/hello-world-frontend
 ~~~
 
-_**Public:**_
+_**Private:**_
 
 ~~~ shell
 kubectl create deployment backend --image quay.io/skupper/hello-world-backend --replicas 3
@@ -188,7 +188,7 @@ $ skupper status
 Skupper is enabled for namespace "public". It is not connected to any other sites. It has no exposed services.
 ~~~
 
-_**Public:**_
+_**Private:**_
 
 ~~~ shell
 skupper init
@@ -230,7 +230,7 @@ token can link to your site.  Make sure that only those you trust
 have access to it.
 
 First, use `skupper token create` in site Public to generate the
-token.  Then, use `skupper link create` in site Public to link
+token.  Then, use `skupper link create` in site Private to link
 the sites.
 
 _**Public:**_
@@ -246,7 +246,7 @@ $ skupper token create ~/secret.token
 Token written to ~/secret.token
 ~~~
 
-_**Public:**_
+_**Private:**_
 
 ~~~ shell
 skupper link create ~/secret.token
@@ -272,10 +272,10 @@ services are exposed on it.  Skupper uses the `skupper expose`
 command to select a service from one site for exposure in all the
 linked sites.
 
-Use `skupper expose` to expose the backend service in Public to
+Use `skupper expose` to expose the backend service in Private to
 the frontend in Public.
 
-_**Public:**_
+_**Private:**_
 
 ~~~ shell
 skupper expose deployment/backend --port 8080
@@ -344,7 +344,7 @@ kubectl delete service/frontend
 kubectl delete deployment/frontend
 ~~~
 
-_**Public:**_
+_**Private:**_
 
 ~~~ shell
 skupper delete

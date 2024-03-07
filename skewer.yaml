@@ -28,7 +28,7 @@ sites:
     env:
       KUBECONFIG: ~/.kube/config-public
   private:
-    title: Public
+    title: Private
     platform: kubernetes
     namespace: private
     env:
