@@ -34,8 +34,8 @@ sites:
     env:
       KUBECONFIG: ~/.kube/config-private
 steps:
-  - standard: install_the_skupper_command_line_tool
-  - standard: kubernetes/set_up_your_namespaces
+  - standard: general/install_the_skupper_command_line_tool
+  - standard: kubernetes/set_up_your_clusters
   - standard: hello_world/deploy_the_frontend_and_backend
   - standard: kubernetes/create_your_sites
   - standard: kubernetes/link_your_sites
