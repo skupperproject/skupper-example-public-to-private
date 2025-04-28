@@ -28,6 +28,13 @@ __all__ = [
 standard_text = read_yaml(join(get_parent_dir(__file__), "standardtext.yaml"))
 standard_steps = read_yaml(join(get_parent_dir(__file__), "standardsteps.yaml"))
 
+standard_steps_by_old_name = dict()
+
+for name, data in standard_steps.items():
+    if "old_name" in data:
+        data["new_name"] = name
+        standard_steps_by_old_name[data["old_name"]] = data
+
 def check_environment():
     check_program("base64")
     check_program("curl")
@@ -198,7 +205,11 @@ def run_step(model, step, work_dir, check=True):
                         continue
 
                     if check and proc.exit_code > 0:
-                        raise PlanoProcessError(proc)
+                        err = PlanoProcessError(proc)
+
+                        error(err)
+
+                        fail(f"A command failed in {step}: {err}")
 
 def pause_for_demo(model):
     notice("Pausing for demo time")
@@ -266,15 +277,14 @@ def print_debug_output(model):
                 run("kubectl get events", check=False)
 
             run("skupper version", check=False)
-            run("skupper status", check=False)
+            run("skupper site status", check=False)
             run("skupper link status", check=False)
-            run("skupper service status", check=False)
-            run("skupper network status", check=False)
-            run("skupper debug events", check=False)
+            run("skupper listener status", check=False)
+            run("skupper connector status", check=False)
 
             if site.platform == "kubernetes":
                 run("kubectl logs deployment/skupper-router", check=False)
-                run("kubectl logs deployment/skupper-service-controller", check=False)
+                # run("kubectl logs deployment/skupper-service-controller", check=False)
 
     print("-- End of debug output")
 
@@ -306,9 +316,9 @@ def generate_readme(skewer_file, output_file):
         if not condition:
             return
 
-        fragment = string_replace(heading, r"[ -]", "_")
-        fragment = string_replace(fragment, r"[\W]", "")
-        fragment = string_replace(fragment, "_", "-")
+        fragment = string_replace_re(heading, r"[ -]", "_")
+        fragment = string_replace_re(fragment, r"[\W]", "")
+        fragment = fragment.replace("_", "-")
         fragment = fragment.lower()
 
         out.append(f"* [{heading}](#{fragment})")
@@ -435,7 +445,13 @@ def apply_standard_steps(model):
         try:
             standard_step_data = standard_steps[standard_step_name]
         except KeyError:
-            fail(f"Standard step '{standard_step_name}' not found")
+            try:
+                standard_step_data = standard_steps_by_old_name[standard_step_name]
+                new_name = standard_step_data["new_name"]
+
+                warning(f"Step '{standard_step_name}' has a new name: '{new_name}'")
+            except KeyError:
+                fail(f"Standard step '{standard_step_name}' not found")
 
         del step.data["standard"]
 
@@ -517,13 +533,13 @@ def get_github_owner_repo():
     result = parse_url(url)
 
     if result.scheme == "" and result.path.startswith("git@github.com:"):
-        path = remove_prefix(result.path, "git@github.com:")
-        path = remove_suffix(path, ".git")
+        path = result.path.removeprefix("git@github.com:")
+        path = path.removesuffix(".git")
 
         return path.split("/", 1)
 
     if result.scheme in ("http", "https") and result.netloc == "github.com":
-        path = remove_prefix(result.path, "/")
+        path = result.path.removeprefix("/")
 
         return path.split("/", 1)
 
@@ -731,6 +747,29 @@ class Minikube:
         run("minikube start -p skewer --auto-update-drivers false")
 
         try:
+            # # Attempt to preload images from the local Podman instance
+            # if which("podman"):
+            #     images = (
+            #         # XXX Need to parse the versions out of skupper version output
+            #         ("quay.io/skupper/skupper-router:3.2.0", "skupper-router.tar"),
+            #         ("quay.io/skupper/kube-adaptor:2.0.0", "skupper-kube-adaptor.tar"),
+            #         ("quay.io/skupper/controller:2.0.0", "skupper-controller.tar"),
+            #         ("quay.io/skupper/hello-world-frontend:latest", "hello-world-frontend.tar"),
+            #         ("quay.io/skupper/hello-world-backend:latest", "hello-world-backend.tar"),
+            #     )
+
+            #     for image in images:
+            #         if run(f"podman image exists {image[0]}", check=False).exit_code != 0:
+            #             continue
+
+            #         # The default docker-archive output format requires this
+            #         remove(image[1])
+
+            #         run(f"podman save {image[0]} -o {image[1]} --quiet")
+            #         run(f"minikube -p skewer image load {image[1]}")
+
+            #     run("minikube -p skewer ssh -- docker image ls")
+
             tunnel_output_file = open(f"{self.work_dir}/minikube-tunnel-output", "w")
             self.tunnel = start("minikube tunnel -p skewer", output=tunnel_output_file)
 

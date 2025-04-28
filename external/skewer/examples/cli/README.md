@@ -1,10 +1,10 @@
 <!-- NOTE: This file is generated from skewer.yaml.  Do not edit it directly. -->
 
-# Skupper Hello World public to private
+# Skupper Hello World
 
-[![main](https://github.com/skupperproject/skupper-example-public-to-private/actions/workflows/main.yaml/badge.svg)](https://github.com/skupperproject/skupper-example-public-to-private/actions/workflows/main.yaml)
+[![main](https://github.com/skupperproject/skewer/actions/workflows/main.yaml/badge.svg)](https://github.com/skupperproject/skewer/actions/workflows/main.yaml)
 
-#### Connect from the cloud to services running on-prem
+#### A minimal HTTP application deployed across Kubernetes clusters using Skupper
 
 This example is part of a [suite of examples][examples] showing the
 different ways you can use [Skupper][website] to connect services
@@ -24,33 +24,18 @@ across cloud providers, data centers, and edge sites.
 * [Step 5: Install the Skupper command-line tool](#step-5-install-the-skupper-command-line-tool)
 * [Step 6: Create your sites](#step-6-create-your-sites)
 * [Step 7: Link your sites](#step-7-link-your-sites)
-* [Step 8: Expose the backend service](#step-8-expose-the-backend-service)
-* [Step 9: Access the frontend service](#step-9-access-the-frontend-service)
+* [Step 8: Fail on demand](#step-8-fail-on-demand)
+* [Step 9: Fail as expected](#step-9-fail-as-expected)
+* [Step 10: Expose the backend service](#step-10-expose-the-backend-service)
+* [Step 11: Access the frontend service](#step-11-access-the-frontend-service)
 * [Cleaning up](#cleaning-up)
+* [Summary](#summary)
 * [Next steps](#next-steps)
 * [About this example](#about-this-example)
 
 ## Overview
 
-This example is a basic multi-service HTTP application deployed
-across one Kubernetes cluster in the public cloud and another
-Kubernetes cluster in a private data center.
-
-It contains two services:
-
-* A backend service that exposes an `/api/hello` endpoint.  It
-  returns greetings of the form `Hi, <your-name>.  I am <my-name>
-  (<pod>)`.
-
-* A frontend service that connects to the backend.  It sends
-  greetings to the backend and fetches new greetings in response.
-
-The backend service runs in the private on-prem cluster, and the
-frontend service runs in the public cloud.  Skupper enables the
-frontend to connect to the backend over a secure dedicated
-application network.
-
-<img src="images/entities.svg" style="max-width: 100%;"/>
+An overview
 
 ## Prerequisites
 
@@ -80,17 +65,17 @@ For each cluster, open a new terminal window.  In each terminal,
 set the `KUBECONFIG` environment variable to a different path and
 log in to your cluster.
 
-_**Public:**_
+_**West:**_
 
 ~~~ shell
-export KUBECONFIG=~/.kube/config-public
+export KUBECONFIG=~/.kube/config-west
 <provider-specific login command>
 ~~~
 
-_**Private:**_
+_**East:**_
 
 ~~~ shell
-export KUBECONFIG=~/.kube/config-private
+export KUBECONFIG=~/.kube/config-east
 <provider-specific login command>
 ~~~
 
@@ -106,18 +91,18 @@ For each cluster, use `kubectl create namespace` and `kubectl
 config set-context` to create the namespace you wish to use and
 set the namespace on your current context.
 
-_**Public:**_
+_**West:**_
 
 ~~~ shell
-kubectl create namespace public
-kubectl config set-context --current --namespace public
+kubectl create namespace west
+kubectl config set-context --current --namespace west
 ~~~
 
-_**Private:**_
+_**East:**_
 
 ~~~ shell
-kubectl create namespace private
-kubectl config set-context --current --namespace private
+kubectl create namespace east
+kubectl config set-context --current --namespace east
 ~~~
 
 ## Step 3: Deploy the frontend and backend
@@ -125,16 +110,16 @@ kubectl config set-context --current --namespace private
 Deploy the Hello World components, placing the frontend on one
 cluster and the backend on the other.
 
-Use `kubectl create deployment` to deploy the frontend in Public
-and the backend in Private.
+Use `kubectl create deployment` to deploy the frontend in West
+and the backend in East.
 
-_**Public:**_
+_**West:**_
 
 ~~~ shell
 kubectl create deployment frontend --image quay.io/skupper/hello-world-frontend
 ~~~
 
-_**Private:**_
+_**East:**_
 
 ~~~ shell
 kubectl create deployment backend --image quay.io/skupper/hello-world-backend --replicas 3
@@ -149,13 +134,13 @@ controller.
 For each cluster, use `kubectl apply` with the Skupper
 installation YAML to install the CRDs and controller.
 
-_**Public:**_
+_**West:**_
 
 ~~~ shell
 kubectl apply -f https://skupper.io/v2/install.yaml
 ~~~
 
-_**Private:**_
+_**East:**_
 
 ~~~ shell
 kubectl apply -f https://skupper.io/v2/install.yaml
@@ -200,32 +185,32 @@ tunnel][minikube-tunnel] before you run `skupper site create`.
 
 [minikube-tunnel]: https://skupper.io/start/minikube.html#running-minikube-tunnel
 
-_**Public:**_
+_**West:**_
 
 ~~~ shell
-skupper site create public --enable-link-access
+skupper site create west --enable-link-access
 ~~~
 
 _Sample output:_
 
 ~~~ console
-$ skupper site create public --enable-link-access
+$ skupper site create west --enable-link-access
 Waiting for status...
-Site "public" is configured. Check the status to see when it is ready
+Site "west" is configured. Check the status to see when it is ready
 ~~~
 
-_**Private:**_
+_**East:**_
 
 ~~~ shell
-skupper site create private
+skupper site create east
 ~~~
 
 _Sample output:_
 
 ~~~ console
-$ skupper site create private
+$ skupper site create east
 Waiting for status...
-Site "private" is configured. Check the status to see when it is ready
+Site "east" is configured. Check the status to see when it is ready
 ~~~
 
 You can use `skupper site status` at any time to check the status
@@ -248,10 +233,10 @@ to create the link.
 token can link to your site.  Make sure that only those you trust
 have access to it.
 
-First, use `skupper token issue` in Public to generate the token.
-Then, use `skupper token redeem` in Private to link the sites.
+First, use `skupper token issue` in West to generate the token.
+Then, use `skupper token redeem` in East to link the sites.
 
-_**Public:**_
+_**West:**_
 
 ~~~ shell
 skupper token issue ~/secret.token
@@ -274,7 +259,7 @@ create a link to this site using the "skupper token redeem" command:
 The token expires after 1 use(s) or after 15m0s.
 ~~~
 
-_**Private:**_
+_**East:**_
 
 ~~~ shell
 skupper token redeem ~/secret.token
@@ -294,7 +279,23 @@ to use `scp` or a similar tool to transfer the token securely.  By
 default, tokens expire after a single use or 15 minutes after
 being issued.
 
-## Step 8: Expose the backend service
+## Step 8: Fail on demand
+
+_**West:**_
+
+~~~ shell
+if [ -n "${SKEWER_FAIL}" ]; then expr 1 / 0; fi
+~~~
+
+## Step 9: Fail as expected
+
+_**West:**_
+
+~~~ shell
+expr 1 / 0
+~~~
+
+## Step 10: Expose the backend service
 
 We now have our sites linked to form a Skupper network, but no
 services are exposed on it.
@@ -307,11 +308,11 @@ particular set of servers.  Skupper routers forward client
 connections from local listeners to remote connectors with
 matching routing keys.
 
-In Public, use the `skupper listener create` command to create a
-listener for the backend.  In Private, use the `skupper connector
+In West, use the `skupper listener create` command to create a
+listener for the backend.  In East, use the `skupper connector
 create` command to create a matching connector.
 
-_**Public:**_
+_**West:**_
 
 ~~~ shell
 skupper listener create backend 8080
@@ -325,7 +326,7 @@ Waiting for create to complete...
 Listener "backend" is ready
 ~~~
 
-_**Private:**_
+_**East:**_
 
 ~~~ shell
 skupper connector create backend 8080
@@ -345,7 +346,7 @@ set the default routing key and pod selector.  You can use the
 
 <!-- You can also use `--workload` -- more convenient! -->
 
-## Step 9: Access the frontend service
+## Step 11: Access the frontend service
 
 In order to use and test the application, we need external access
 to the frontend.
@@ -353,7 +354,7 @@ to the frontend.
 Use `kubectl port-forward` to make the frontend available at
 `localhost:8080`.
 
-_**Public:**_
+_**West:**_
 
 ~~~ shell
 kubectl port-forward deployment/frontend 8080:8080
@@ -367,23 +368,31 @@ You can now access the web interface by navigating to
 To remove Skupper and the other resources from this exercise, use
 the following commands:
 
-_**Public:**_
+And more!
+
+_**West:**_
 
 ~~~ shell
 skupper site delete --all
 kubectl delete deployment/frontend
 ~~~
 
-_**Private:**_
+_**East:**_
 
 ~~~ shell
 skupper site delete --all
 kubectl delete deployment/backend
 ~~~
 
+## Summary
+
+More summary
+
 ## Next steps
 
 Check out the other [examples][examples] on the Skupper website.
+
+More steps
 
 ## About this example
 
